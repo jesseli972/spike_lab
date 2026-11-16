@@ -1,6 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { NET_HEIGHT_MEN } from './constants.js';
+import { NET_HEIGHT_MEN, PHYSICS_DT } from './constants.js';
 import { createCourt } from './scene/court.js';
 import { createBall } from './scene/ball.js';
 import { addLights } from './scene/lights.js';
@@ -22,13 +22,11 @@ const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerH
 camera.position.set(-16, 10, 14);
 const controls = new OrbitControls(camera, renderer.domElement);
 
-// Temporary until the court exists.
-scene.add(new THREE.GridHelper(20, 20));
-
 addLights(scene, renderer);
 let court = createCourt(NET_HEIGHT_MEN);
 scene.add(court);
 const ball = createBall();
+ball.setVisible(false);
 scene.add(ball.mesh);
 const trail = createTrail(0xffcc00);
 scene.add(trail.object3d);
@@ -37,17 +35,36 @@ scene.add(marker.object3d);
 const rig = createCameraRig(camera, controls);
 const readout = createReadout();
 
-let result = null;
-let flightT = 0;
+const playback = { result: null, time: 0, playing: false, timeScale: 1 };
+const spin = new THREE.Quaternion();
+const spinAxis = new THREE.Vector3();
+const spinStep = new THREE.Quaternion();
+let spinRate = 0;
 
 function launch(l) {
-  result = simulate(l);
-  flightT = 0;
+  const result = simulate(l);
+  playback.result = result;
+  playback.time = 0;
+  playback.playing = true;
   trail.setPath(result.samples);
+  trail.reveal(0);
   marker.hide();
   readout.clear();
-  ball.setVisible(true);
   rig.setServerPos(l.pos);
+  spin.identity();
+  spinAxis.copy(result.omega);
+  spinRate = spinAxis.length();
+  if (spinRate > 0) spinAxis.divideScalar(spinRate);
+  ball.setVisible(true);
+}
+
+function disposeCourt(group) {
+  group.traverse((o) => {
+    if (!o.isMesh) return;
+    o.geometry.dispose();
+    o.material.map?.dispose();
+    o.material.dispose();
+  });
 }
 
 const panel = createPanel({
@@ -56,14 +73,50 @@ const panel = createPanel({
   onViewChange: (name) => rig.setView(name),
   onNetHeightChange: (h) => {
     scene.remove(court);
+    disposeCourt(court);
     court = createCourt(h);
     scene.add(court);
   },
 });
 rig.setServerPos(panel.getLaunch().pos);
 
-function sampleAt(samples, t) {
-  return samples.find((s) => s.t >= t) ?? samples[samples.length - 1];
+// Samples are PHYSICS_DT apart except the last, which sits at the contact point.
+function positionAt(samples, t) {
+  const i = Math.min(Math.floor(t / PHYSICS_DT), samples.length - 2);
+  const a = samples[i];
+  const b = samples[i + 1];
+  const span = b.t - a.t;
+  const f = span > 0 ? Math.min(Math.max((t - a.t) / span, 0), 1) : 1;
+  return {
+    pos: {
+      x: a.pos.x + (b.pos.x - a.pos.x) * f,
+      y: a.pos.y + (b.pos.y - a.pos.y) * f,
+      z: a.pos.z + (b.pos.z - a.pos.z) * f,
+    },
+    vel: a.vel,
+  };
+}
+
+function step(dt) {
+  const { result } = playback;
+  playback.time += dt * playback.timeScale;
+  spinStep.setFromAxisAngle(spinAxis, spinRate * dt * playback.timeScale);
+  spin.premultiply(spinStep);
+
+  const done = playback.time >= result.flightTime;
+  const last = result.samples[result.samples.length - 1];
+  const s = done ? last : positionAt(result.samples, playback.time);
+  if (done) playback.time = result.flightTime;
+
+  ball.setState(s.pos, spin);
+  trail.reveal(playback.time);
+  rig.update(dt, s.pos, s.vel);
+
+  if (done) {
+    playback.playing = false;
+    marker.show(result.landing, result.outcome);
+    readout.show(result);
+  }
 }
 
 window.addEventListener('resize', () => {
@@ -75,19 +128,9 @@ window.addEventListener('resize', () => {
 const clock = new THREE.Clock();
 renderer.setAnimationLoop(() => {
   const dt = clock.getDelta();
-  let s = null;
-  if (result && result.samples.length) {
-    flightT += dt;
-    s = sampleAt(result.samples, flightT);
-    ball.setState(s.pos, new THREE.Quaternion());
-    trail.reveal(flightT);
-    if (flightT >= result.flightTime) {
-      if (result.landing) marker.show(result.landing, result.outcome);
-      readout.show(result);
-      result = null;
-    }
-  }
-  rig.update(dt, s?.pos ?? null, s?.vel ?? null);
+  // controls first, so the rig's minimum-height clamp applies last
   controls.update();
+  if (playback.playing) step(dt);
+  else rig.update(dt, null, null);
   renderer.render(scene, camera);
 });
