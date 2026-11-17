@@ -78,3 +78,12 @@ One line per decision the coordinator made. Decisions the human made are in `COO
 - T16 contract change: `createPanel` also takes `onCompareChange(on)` and returns `setLandingDiff(dx or null)`.
 - T16: the landing difference is shown in the panel, not the console, to keep the no-`console.log` gate.
 - T15 and T16 checked in Chrome by the coordinator: readout, quarter-speed replay, scrub, ghost path, landing difference (-1.73 m for 60 rpm topspin), preset net-height fix; no console errors.
+
+## Housekeeping (human gave permission to update any file)
+
+- `tasks/T10.md` row 4 updated to the launch the human chose (option A), so the card matches the test.
+- `tasks/T04.md` updated to name `PCFShadowMap`, matching the code.
+- `README.md` updated with the readout, presets, replay, compare and graphics sections.
+- `CLAUDE.md` not updated: the file is read-only on disk, which looks like a deliberate lock, so the coordinator did not change its permissions.
+- Backspin distance (36 m for the topspin serve with backspin) checked by hand: lift comes out about equal to the ball's weight at 95 km/h and 360 rpm, which is in line with real volleyball spin. No physics change.
+- Not pushed: `main` is 39+ commits ahead of `origin/main`, and the repo's workflow deploys to GitHub Pages on every push to `main`, so a push publishes the site.
