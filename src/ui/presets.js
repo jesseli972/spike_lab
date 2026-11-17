@@ -21,7 +21,7 @@ export const PRESETS = [
       pos: { x: -9.0, y: 3.1, z: 0 },
       speed: 95 * KMH,
       azimuthDeg: 0,
-      elevationDeg: 4,
+      elevationDeg: 5,
       spinType: 'top',
       spinRpm: 360,
       netHeight: NET_HEIGHT_MEN,
