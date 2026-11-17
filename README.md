@@ -17,9 +17,18 @@ npm run preview  # serve the built dist/ locally
 ## Controls
 
 - **Space**: launch with the current settings (unless focus is in a field or button).
-- **Panel** (top right): contact position, speed, aim, vertical angle, spin type and rpm, net height (men or women), camera view, and a Launch button.
+- **Panel** (top right): a preset menu, contact position, speed, aim, vertical angle, spin type and rpm, net height (men or women), camera view, and a Launch button.
+- **Readout** (top left): the call (IN, OUT, NET or ANTENNA), landing point, flight time, peak height, and net clearance.
+- **Replay**: set a playback speed, pause, or drag Scrub to any moment of the flight. Dragging Scrub back to 0 replays it.
+- **Compare**: turn on "Compare with last" to keep the previous path as a dim trail and see how much farther or shorter the new flight landed.
 - **Views**: broadcast, side, server, follow, and free.
 - **Free view**: drag to orbit the camera.
+
+## Graphics
+
+- A gym hall, a procedural wood-plank floor, environment reflections, and filmic tone mapping.
+- Hand-written GLSL shaders: a net that ripples where the ball hits it, a trail that fades behind the ball and glows at its head, and a pulsing landing ring.
+- Every texture is drawn in code on a canvas; the project has no image or model files.
 
 ## Units
 
