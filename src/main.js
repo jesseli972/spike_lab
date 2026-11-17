@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { NET_HEIGHT_MEN, PHYSICS_DT } from './constants.js';
 import { createCourt } from './scene/court.js';
+import { createGym } from './scene/gym.js';
 import { createBall } from './scene/ball.js';
 import { addLights } from './scene/lights.js';
 import { createTrail } from './scene/trail.js';
@@ -23,6 +24,7 @@ camera.position.set(-16, 10, 14);
 const controls = new OrbitControls(camera, renderer.domElement);
 
 addLights(scene, renderer);
+scene.add(createGym());
 let court = createCourt(NET_HEIGHT_MEN);
 scene.add(court);
 const ball = createBall();
@@ -115,6 +117,7 @@ function step(dt) {
   if (done) {
     playback.playing = false;
     marker.show(result.landing, result.outcome);
+    if (result.outcome === 'net') court.userData.hitNet(last.pos);
     readout.show(result);
   }
 }

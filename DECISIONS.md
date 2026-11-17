@@ -46,3 +46,14 @@ One line per decision the coordinator made. Decisions the human made are in `COO
 - Net looked disconnected from the posts (net is 9.5 m, posts are 11 m apart): added four white cables from the net's top and bottom edges to the posts in `court.js`. No constant changed.
 - T04: `PCFSoftShadowMap` (named on the card) no longer exists in three 0.187 and logged a warning; switched to `PCFShadowMap`, which is what three was already falling back to.
 - T11: `THREE.Clock` is deprecated and logged a warning; switched `main.js` to `THREE.Timer`.
+
+## Graphics pass (human asked for better graphics; chose "gym and materials" and "custom GLSL shaders")
+
+- Not a task card: the plan had no graphics task. Done by the coordinator on `gfx/graphics-pass`.
+- New module `src/scene/gym.js`, `createGym() -> THREE.Group`: hall walls and a lit ceiling, drawn only from inside so outside cameras see in. `CLAUDE.md` does not list it yet; the human owns that file.
+- `court.js`: procedural wood-plank floor; the net is now a GLSL shader (procedural 10 cm mesh, sway, ripple on hit). `createCourt` keeps its contract and adds `group.userData.hitNet(point)`, which `main.js` calls when a flight ends `'net'`.
+- Net no longer casts a shadow: a depth pass would ignore the shader's holes and draw a solid slab. Posts, cables and antennas still do.
+- `marker.js`: the ring is a GLSL shader with an expanding pulse; ring radii 0.12 and 0.2 are unchanged. It needed its own `polygonOffset`, because the court's offset was hiding it.
+- `trail.js`: still `Line2`; `LineMaterial`'s fragment shader is patched to fade behind the ball, brighten with speed, and glow at the head. The `color` argument is still the base colour.
+- `lights.js`: ACES tone mapping and a prefiltered `RoomEnvironment` for reflections. Both ship with three; no new dependency.
+- Checked in Chrome by the coordinator: scene renders, default launch, side view, landing ring, and net ripple all work, with no console errors or warnings.
