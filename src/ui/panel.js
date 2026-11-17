@@ -6,6 +6,7 @@ const KMH = 1 / 3.6;
 
 export function createPanel({
   viewNames, onLaunch, onViewChange, onNetHeightChange, onSpeedChange, onPauseChange, onScrub,
+  onCompareChange,
 }) {
   const state = {
     preset: PRESETS[0].name,
@@ -23,6 +24,8 @@ export function createPanel({
     playbackSpeed: 1,
     paused: false,
     scrub: 0,
+    compare: false,
+    landingDiff: '-',
   };
 
   const gui = new GUI({ title: 'Spike Lab' });
@@ -52,6 +55,10 @@ export function createPanel({
   replay.add(state, 'playbackSpeed', 0.1, 1).name('Playback speed').onChange((v) => onSpeedChange(v));
   replay.add(state, 'paused').name('Pause').onChange((v) => onPauseChange(v));
   const scrub = replay.add(state, 'scrub', 0, 1).name('Scrub (s)').onChange((t) => onScrub(t));
+
+  const compare = gui.addFolder('Compare');
+  compare.add(state, 'compare').name('Compare with last').onChange((v) => onCompareChange(v));
+  const landingDiff = compare.add(state, 'landingDiff').name('Landing x vs last').disable();
 
   // Space launches unless focus is in a field or button (a focused button already fires click).
   window.addEventListener('keydown', (e) => {
@@ -96,5 +103,11 @@ export function createPanel({
     scrub.updateDisplay();
   }
 
-  return { getLaunch, setLaunch, setPlayback };
+  // Shows how much farther (+) or shorter (-) this flight landed than the last; null shows a dash.
+  function setLandingDiff(dx) {
+    state.landingDiff = dx == null ? '-' : `${dx >= 0 ? '+' : ''}${dx.toFixed(2)} m`;
+    landingDiff.updateDisplay();
+  }
+
+  return { getLaunch, setLaunch, setPlayback, setLandingDiff };
 }

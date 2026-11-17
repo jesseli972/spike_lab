@@ -57,3 +57,24 @@ One line per decision the coordinator made. Decisions the human made are in `COO
 - `trail.js`: still `Line2`; `LineMaterial`'s fragment shader is patched to fade behind the ball, brighten with speed, and glow at the head. The `color` argument is still the base colour.
 - `lights.js`: ACES tone mapping and a prefiltered `RoomEnvironment` for reflections. Both ship with three; no new dependency.
 - Checked in Chrome by the coordinator: scene renders, default launch, side view, landing ring, and net ripple all work, with no console errors or warnings.
+
+## Wave 4 (T12, T13, T14)
+
+- Human said to continue with the remaining planned tasks without a written answer on `VISUAL_CHECKS.md`; the coordinator had checked the main items in Chrome.
+- Worker commits went through this time (no permission denial), so workers committed their own branches.
+- T12: accepted landing x and z as two rows; accepted the readout box being added to `document.body` once.
+- T13: accepted the Jump topspin serve's vertical angle moving from 4° to 5° (the card's own tuning rule). No physics file, constant or existing test changed.
+- T13: accepted the +10% speed test checking distance only, as the card words it; the faster serve lands out.
+- T13: "Outside spike" lands in. "Outside" is the hitter's position, not the outcome; left as is.
+- T14: not deployed. Publishing to GitHub Pages leaves this machine and waits for the human. Only the relative-path build was confirmed.
+- T14: help line given a dark background by the coordinator; pale text was unreadable on the wood floor.
+
+## Waves 5 and 6 (T15, T16, done by the coordinator)
+
+- T15 contract change (planned by the card): `createPanel` also takes `onSpeedChange(scale)`, `onPauseChange(paused)`, `onScrub(time)` and returns `setPlayback(time, flightTime)`. `CLAUDE.md` must be updated by the human.
+- T15: scrubbing jumps to that time and playback carries on from there unless paused; dragging to 0 replays the flight.
+- T15: ball spin is now computed from the playback time instead of accumulated per frame, so scrubbing backward works.
+- T15: `setLaunch` now calls `onNetHeightChange` when the net height changes. Before, picking a preset after choosing Women left the court at the wrong height.
+- T16 contract change: `createPanel` also takes `onCompareChange(on)` and returns `setLandingDiff(dx or null)`.
+- T16: the landing difference is shown in the panel, not the console, to keep the no-`console.log` gate.
+- T15 and T16 checked in Chrome by the coordinator: readout, quarter-speed replay, scrub, ghost path, landing difference (-1.73 m for 60 rpm topspin), preset net-height fix; no console errors.

@@ -14,8 +14,10 @@ canvas {
   position: fixed;
   left: 12px;
   bottom: 12px;
-  color: #ddd;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
   font: 13px/1.4 system-ui, sans-serif;
-  opacity: 0.8;
   pointer-events: none;
 }
