@@ -1,10 +1,12 @@
 import GUI from 'lil-gui';
 import { NET_HEIGHT_MEN, NET_HEIGHT_WOMEN } from '../constants.js';
+import { PRESETS } from './presets.js';
 
 const KMH = 1 / 3.6;
 
 export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChange }) {
   const state = {
+    preset: PRESETS[0].name,
     contactX: -9.5,
     contactZ: 0,
     contactH: 2.6,
@@ -19,6 +21,10 @@ export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChan
   };
 
   const gui = new GUI({ title: 'Spike Lab' });
+  gui
+    .add(state, 'preset', PRESETS.map((p) => p.name))
+    .name('Preset')
+    .onChange((name) => setLaunch(PRESETS.find((p) => p.name === name).launch));
   gui.add(state, 'contactX', -12, -0.5).name('Contact x (m)');
   gui.add(state, 'contactZ', -4.5, 4.5).name('Contact z (m)');
   gui.add(state, 'contactH', 0.5, 3.8).name('Contact height (m)');
