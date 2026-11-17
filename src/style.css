@@ -1,0 +1,21 @@
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: #111;
+}
+
+canvas {
+  display: block;
+}
+
+#help {
+  position: fixed;
+  left: 12px;
+  bottom: 12px;
+  color: #ddd;
+  font: 13px/1.4 system-ui, sans-serif;
+  opacity: 0.8;
+  pointer-events: none;
+}
