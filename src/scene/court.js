@@ -105,6 +105,22 @@ export function createCourt(netHeight) {
     group.add(post);
   }
 
+  // Cables tie the net's top and bottom edges to the posts, closing the gap beyond the net's ends.
+  const postZ = COURT_WIDTH / 2 + POST_OFFSET;
+  const cableLen = postZ - NET_LENGTH / 2;
+  const cableGeo = new THREE.CylinderGeometry(ANTENNA_RADIUS, ANTENNA_RADIUS, cableLen, 8);
+  cableGeo.rotateX(Math.PI / 2); // lie along z
+  const cableMat = new THREE.MeshStandardMaterial({ color: 0xffffff });
+  for (const side of [-1, 1]) {
+    for (const [edge, y] of [['Top', netHeight], ['Bottom', netHeight - NET_BAND]]) {
+      const cable = new THREE.Mesh(cableGeo, cableMat);
+      cable.position.set(0, y, side * (NET_LENGTH / 2 + cableLen / 2));
+      cable.name = `cable${edge}${side < 0 ? 'NegZ' : 'PosZ'}`;
+      cable.castShadow = true;
+      group.add(cable);
+    }
+  }
+
   // Antennas run from the net's bottom edge to ANTENNA_ABOVE_NET above its top edge.
   const antennaH = NET_BAND + ANTENNA_ABOVE_NET;
   const antennaGeo = new THREE.CylinderGeometry(ANTENNA_RADIUS, ANTENNA_RADIUS, antennaH, 8);
