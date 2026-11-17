@@ -1,9 +1,18 @@
 import * as THREE from 'three';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 
 export function addLights(scene, renderer) {
   // three removed PCFSoftShadowMap; PCFShadowMap is what it now falls back to.
   renderer.shadowMap.type = THREE.PCFShadowMap;
   scene.background = new THREE.Color(0x2b2f36);
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
+
+  // A prefiltered room gives the glossy floor and the ball something to reflect.
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  scene.environment = pmrem.fromScene(new RoomEnvironment(), 0.04).texture;
+  scene.environmentIntensity = 0.45;
+  pmrem.dispose();
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
   scene.add(hemi);
