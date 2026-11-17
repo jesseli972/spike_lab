@@ -32,6 +32,8 @@ ball.setVisible(false);
 scene.add(ball.mesh);
 const trail = createTrail(0xffcc00);
 scene.add(trail.object3d);
+const ghost = createTrail(0x9fb4c8);
+scene.add(ghost.object3d);
 const marker = createMarker();
 scene.add(marker.object3d);
 const rig = createCameraRig(camera, controls);
@@ -41,9 +43,19 @@ const playback = { result: null, time: 0, playing: false, paused: false, timeSca
 const spin = new THREE.Quaternion();
 const spinAxis = new THREE.Vector3();
 let spinRate = 0;
+let compare = false;
 
 function launch(l) {
   const result = simulate(l);
+  // With compare on, the flight being replaced becomes the dim ghost path, fully drawn.
+  const previous = compare ? playback.result : null;
+  if (previous) {
+    ghost.setPath(previous.samples);
+    ghost.reveal(Infinity);
+  } else {
+    ghost.clear();
+  }
+  panel.setLandingDiff(previous?.landing && result.landing ? result.landing.x - previous.landing.x : null);
   playback.result = result;
   playback.time = 0;
   playback.playing = true;
@@ -76,6 +88,13 @@ const panel = createPanel({
     disposeCourt(court);
     court = createCourt(h);
     scene.add(court);
+  },
+  onCompareChange: (on) => {
+    compare = on;
+    if (!on) {
+      ghost.clear();
+      panel.setLandingDiff(null);
+    }
   },
   onSpeedChange: (scale) => { playback.timeScale = scale; },
   onPauseChange: (paused) => { playback.paused = paused; },
