@@ -4,7 +4,9 @@ import { PRESETS } from './presets.js';
 
 const KMH = 1 / 3.6;
 
-export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChange }) {
+export function createPanel({
+  viewNames, onLaunch, onViewChange, onNetHeightChange, onSpeedChange, onPauseChange, onScrub,
+}) {
   const state = {
     preset: PRESETS[0].name,
     contactX: -9.5,
@@ -18,6 +20,9 @@ export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChan
     netHeight: NET_HEIGHT_MEN,
     view: 'broadcast',
     launch: () => onLaunch(getLaunch()),
+    playbackSpeed: 1,
+    paused: false,
+    scrub: 0,
   };
 
   const gui = new GUI({ title: 'Spike Lab' });
@@ -43,6 +48,11 @@ export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChan
     .onChange((name) => onViewChange(name));
   gui.add(state, 'launch').name('Launch');
 
+  const replay = gui.addFolder('Replay');
+  replay.add(state, 'playbackSpeed', 0.1, 1).name('Playback speed').onChange((v) => onSpeedChange(v));
+  replay.add(state, 'paused').name('Pause').onChange((v) => onPauseChange(v));
+  const scrub = replay.add(state, 'scrub', 0, 1).name('Scrub (s)').onChange((t) => onScrub(t));
+
   // Space launches unless focus is in a field or button (a focused button already fires click).
   window.addEventListener('keydown', (e) => {
     if (e.code !== 'Space' || e.repeat) return;
@@ -63,8 +73,9 @@ export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChan
     };
   }
 
-  // Writes the values directly so no change callback fires.
+  // Writes the values directly, so only a changed net height reports back (the court must follow it).
   function setLaunch(launch) {
+    const netChanged = launch.netHeight !== state.netHeight;
     state.contactX = launch.pos.x;
     state.contactH = launch.pos.y;
     state.contactZ = launch.pos.z;
@@ -75,7 +86,15 @@ export function createPanel({ viewNames, onLaunch, onViewChange, onNetHeightChan
     state.spinRpm = launch.spinRpm;
     state.netHeight = launch.netHeight;
     gui.controllersRecursive().forEach((c) => c.updateDisplay());
+    if (netChanged) onNetHeightChange(state.netHeight);
   }
 
-  return { getLaunch, setLaunch };
+  // Moves the scrub slider to match playback without firing onScrub.
+  function setPlayback(time, flightTime) {
+    if (scrub._max !== flightTime) scrub.max(flightTime);
+    state.scrub = time;
+    scrub.updateDisplay();
+  }
+
+  return { getLaunch, setLaunch, setPlayback };
 }

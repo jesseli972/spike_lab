@@ -37,10 +37,9 @@ scene.add(marker.object3d);
 const rig = createCameraRig(camera, controls);
 const readout = createReadout();
 
-const playback = { result: null, time: 0, playing: false, timeScale: 1 };
+const playback = { result: null, time: 0, playing: false, paused: false, timeScale: 1 };
 const spin = new THREE.Quaternion();
 const spinAxis = new THREE.Vector3();
-const spinStep = new THREE.Quaternion();
 let spinRate = 0;
 
 function launch(l) {
@@ -53,7 +52,6 @@ function launch(l) {
   marker.hide();
   readout.clear();
   rig.setServerPos(l.pos);
-  spin.identity();
   spinAxis.copy(result.omega);
   spinRate = spinAxis.length();
   if (spinRate > 0) spinAxis.divideScalar(spinRate);
@@ -79,6 +77,15 @@ const panel = createPanel({
     court = createCourt(h);
     scene.add(court);
   },
+  onSpeedChange: (scale) => { playback.timeScale = scale; },
+  onPauseChange: (paused) => { playback.paused = paused; },
+  // Scrubbing jumps to that moment; playback carries on from there unless paused.
+  onScrub: (time) => {
+    if (!playback.result) return;
+    playback.time = time;
+    playback.playing = true;
+    marker.hide();
+  },
 });
 rig.setServerPos(panel.getLaunch().pos);
 
@@ -99,20 +106,21 @@ function positionAt(samples, t) {
   };
 }
 
+// Draws the flight at playback.time; the ball's spin angle follows from the time, so scrubbing works.
 function step(dt) {
   const { result } = playback;
-  playback.time += dt * playback.timeScale;
-  spinStep.setFromAxisAngle(spinAxis, spinRate * dt * playback.timeScale);
-  spin.premultiply(spinStep);
+  if (!playback.paused) playback.time += dt * playback.timeScale;
 
   const done = playback.time >= result.flightTime;
   const last = result.samples[result.samples.length - 1];
   const s = done ? last : positionAt(result.samples, playback.time);
   if (done) playback.time = result.flightTime;
 
+  spin.setFromAxisAngle(spinAxis, spinRate * playback.time);
   ball.setState(s.pos, spin);
   trail.reveal(playback.time);
   rig.update(dt, s.pos, s.vel);
+  panel.setPlayback(playback.time, result.flightTime);
 
   if (done) {
     playback.playing = false;
