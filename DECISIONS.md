@@ -40,3 +40,9 @@ One line per decision the coordinator made. Decisions the human made are in `COO
 - T11: ball spin is applied about the world-space `omega` axis (premultiply).
 - T11: court disposal frees each mesh's geometry, material and texture.
 - T11: every done-when check is visual, so all of them are in `VISUAL_CHECKS.md`; none was run in a browser.
+
+## Visual round 1 (human feedback after T11)
+
+- Net looked disconnected from the posts (net is 9.5 m, posts are 11 m apart): added four white cables from the net's top and bottom edges to the posts in `court.js`. No constant changed.
+- T04: `PCFSoftShadowMap` (named on the card) no longer exists in three 0.187 and logged a warning; switched to `PCFShadowMap`, which is what three was already falling back to.
+- T11: `THREE.Clock` is deprecated and logged a warning; switched `main.js` to `THREE.Timer`.

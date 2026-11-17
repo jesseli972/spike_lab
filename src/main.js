@@ -125,9 +125,11 @@ window.addEventListener('resize', () => {
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-const clock = new THREE.Clock();
-renderer.setAnimationLoop(() => {
-  const dt = clock.getDelta();
+const timer = new THREE.Timer();
+timer.connect(document);
+renderer.setAnimationLoop((timestamp) => {
+  timer.update(timestamp);
+  const dt = timer.getDelta();
   // controls first, so the rig's minimum-height clamp applies last
   controls.update();
   if (playback.playing) step(dt);

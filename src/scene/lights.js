@@ -1,7 +1,8 @@
 import * as THREE from 'three';
 
 export function addLights(scene, renderer) {
-  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // three removed PCFSoftShadowMap; PCFShadowMap is what it now falls back to.
+  renderer.shadowMap.type = THREE.PCFShadowMap;
   scene.background = new THREE.Color(0x2b2f36);
 
   const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.6);
